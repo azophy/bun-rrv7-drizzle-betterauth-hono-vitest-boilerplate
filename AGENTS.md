@@ -9,4 +9,4 @@ When working in `server/`, consult that file for:
 - how to generate and apply Drizzle migrations
 - how to run Vitest integration tests
 
-When creating a GitHub PR, default to using `staging` as the target branch.
+When creating a GitHub PR, default to using `main` as the target branch.

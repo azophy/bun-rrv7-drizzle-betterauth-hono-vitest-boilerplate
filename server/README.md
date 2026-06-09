@@ -10,13 +10,13 @@ BHVR server package built with:
 
 ## Environment
 
-The server expects these environment variables:
+Environment defaults are documented in the root `.env.example` file. Copy it to `.env` and update secrets as needed:
 
 ```sh
-DATABASE_URL=postgres://postgres:postgres@localhost:5432/postgres
-BETTER_AUTH_SECRET=<at-least-32-characters>
-BETTER_AUTH_URL=http://localhost:5173
+cp .env.example .env
 ```
+
+`BETTER_AUTH_SECRET` must be at least 32 characters.
 
 ## Install
 
