@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { setAuthTransportForTesting, type AuthSession } from "./lib/auth";
+import type { AuthSession } from "./lib/auth";
 import { clientLoader as dashboardLoader } from "./routes/dashboard";
 import { clientAction as loginAction } from "./routes/login";
 import { clientAction as logoutAction } from "./routes/logout";
@@ -17,6 +17,19 @@ const testSession: AuthSession = {
 		expiresAt: new Date(Date.now() + 60_000).toISOString(),
 		userId: "user_123",
 	},
+};
+
+type AuthFetch = (
+	...args: Parameters<typeof fetch>
+) => ReturnType<typeof fetch>;
+
+type SignInBody = {
+	email: string;
+	password: string;
+};
+
+type SignUpBody = SignInBody & {
+	name: string;
 };
 
 function jsonResponse(body: unknown, status = 200) {
@@ -44,25 +57,54 @@ function expectRedirect(response: Response, location: string) {
 	expect(response.headers.get("Location")).toBe(location);
 }
 
+function getPathname(input: RequestInfo | URL) {
+	return new URL(input instanceof Request ? input.url : String(input)).pathname;
+}
+
+function readJsonBody(init?: RequestInit) {
+	return typeof init?.body === "string" ? JSON.parse(init.body) : undefined;
+}
+
 describe("client auth integration", () => {
-	const transport = {
+	const authHandlers = {
 		getSession: vi.fn<() => Promise<Response>>(),
-		signInEmail: vi.fn<(input: { email: string; password: string }) => Promise<Response>>(),
+		signInEmail: vi.fn<(input: SignInBody) => Promise<Response>>(),
 		signOut: vi.fn<() => Promise<Response>>(),
-		signUpEmail: vi.fn<(input: { email: string; name: string; password: string }) => Promise<Response>>(),
+		signUpEmail: vi.fn<(input: SignUpBody) => Promise<Response>>(),
+	};
+
+	const authFetch: AuthFetch = async (input, init) => {
+		const method =
+			init?.method ?? (input instanceof Request ? input.method : "GET");
+		const route = `${method} ${getPathname(input)}`;
+
+		switch (route) {
+			case "GET /api/auth/get-session":
+				return await authHandlers.getSession();
+			case "POST /api/auth/sign-in/email":
+				return await authHandlers.signInEmail(readJsonBody(init) as SignInBody);
+			case "POST /api/auth/sign-out":
+				return await authHandlers.signOut();
+			case "POST /api/auth/sign-up/email":
+				return await authHandlers.signUpEmail(readJsonBody(init) as SignUpBody);
+			default:
+				return jsonResponse({ message: `Unhandled auth request: ${route}` }, 404);
+		}
 	};
 
 	beforeEach(() => {
 		vi.resetAllMocks();
-		setAuthTransportForTesting(transport);
+		vi.stubGlobal("fetch", authFetch);
 	});
 
 	afterEach(() => {
-		setAuthTransportForTesting(null);
+		vi.unstubAllGlobals();
 	});
 
-	it("signs in through the mocked Hono auth transport", async () => {
-		transport.signInEmail.mockResolvedValue(jsonResponse({ token: "token", user: testSession.user }));
+	it("signs in through the mocked Hono auth fetch layer", async () => {
+		authHandlers.signInEmail.mockResolvedValue(
+			jsonResponse({ token: "token", user: testSession.user }),
+		);
 
 		const result = await loginAction({
 			request: formRequest("/login", {
@@ -71,7 +113,7 @@ describe("client auth integration", () => {
 			}),
 		});
 
-		expect(transport.signInEmail).toHaveBeenCalledWith({
+		expect(authHandlers.signInEmail).toHaveBeenCalledWith({
 			email: "jane@example.com",
 			password: "CorrectHorseBatteryStaple123!",
 		});
@@ -79,7 +121,9 @@ describe("client auth integration", () => {
 	});
 
 	it("surfaces sign in errors from the auth endpoint", async () => {
-		transport.signInEmail.mockResolvedValue(jsonResponse({ message: "Invalid credentials" }, 401));
+		authHandlers.signInEmail.mockResolvedValue(
+			jsonResponse({ message: "Invalid credentials" }, 401),
+		);
 
 		const result = await loginAction({
 			request: formRequest("/login", {
@@ -91,8 +135,10 @@ describe("client auth integration", () => {
 		expect(result).toEqual({ error: "Invalid credentials" });
 	});
 
-	it("signs up through the mocked Hono auth transport", async () => {
-		transport.signUpEmail.mockResolvedValue(jsonResponse({ token: "token", user: testSession.user }));
+	it("signs up through the mocked Hono auth fetch layer", async () => {
+		authHandlers.signUpEmail.mockResolvedValue(
+			jsonResponse({ token: "token", user: testSession.user }),
+		);
 
 		const result = await registerAction({
 			request: formRequest("/register", {
@@ -102,7 +148,7 @@ describe("client auth integration", () => {
 			}),
 		});
 
-		expect(transport.signUpEmail).toHaveBeenCalledWith({
+		expect(authHandlers.signUpEmail).toHaveBeenCalledWith({
 			email: "jane@example.com",
 			name: "Jane Doe",
 			password: "CorrectHorseBatteryStaple123!",
@@ -111,7 +157,7 @@ describe("client auth integration", () => {
 	});
 
 	it("protects dashboard and users when no session exists", async () => {
-		transport.getSession.mockImplementation(() => Promise.resolve(jsonResponse(null)));
+		authHandlers.getSession.mockImplementation(() => Promise.resolve(jsonResponse(null)));
 
 		for (const loader of [dashboardLoader, usersLoader]) {
 			try {
@@ -124,18 +170,20 @@ describe("client auth integration", () => {
 	});
 
 	it("allows protected routes when a session exists", async () => {
-		transport.getSession.mockImplementation(() => Promise.resolve(jsonResponse(testSession)));
+		authHandlers.getSession.mockImplementation(() =>
+			Promise.resolve(jsonResponse(testSession)),
+		);
 
 		await expect(dashboardLoader()).resolves.toEqual(testSession);
 		await expect(usersLoader()).resolves.toEqual(testSession);
 	});
 
 	it("signs out and redirects to login", async () => {
-		transport.signOut.mockResolvedValue(jsonResponse({ success: true }));
+		authHandlers.signOut.mockResolvedValue(jsonResponse({ success: true }));
 
 		const result = await logoutAction();
 
-		expect(transport.signOut).toHaveBeenCalledOnce();
+		expect(authHandlers.signOut).toHaveBeenCalledOnce();
 		expectRedirect(result as Response, "/login");
 	});
 });

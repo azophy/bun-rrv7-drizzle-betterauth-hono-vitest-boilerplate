@@ -88,8 +88,9 @@ Better Auth still handles the actual request via `auth.handler(request)`, so Hon
 `server/src/index.ts` annotates the explicit auth routes with response types derived from `auth.api.*` / `auth.$Infer`. The client then derives its exported auth response types from each Hono client endpoint's `json()` return type:
 
 ```ts
-type SignInEmailEndpoint = typeof api.api.auth["sign-in"]["email"]["$post"];
-type SignInResponse = HonoResponseBody<SignInEmailEndpoint>;
+type SignInResponse = InferResponseType<
+  typeof authApi["sign-in"]["email"]["$post"]
+>;
 ```
 
 If an auth endpoint response shape changes, update the server route annotation first so the Hono client type remains the source of truth.
@@ -102,7 +103,7 @@ Client auth integration tests live in:
 client/src/auth.integration.test.ts
 ```
 
-They mock the HTTP/Hono transport through `setAuthTransportForTesting()` from `client/src/lib/auth.ts`.
+They mock the HTTP/Hono fetch layer by stubbing `globalThis.fetch`.
 
 Run client tests:
 
