@@ -1,54 +1,44 @@
-# React + TypeScript + Vite
+# Client
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+React + TypeScript frontend using Vite, Tailwind CSS, and React Router framework mode in SPA mode.
 
-Currently, two official plugins are available:
+## Routing
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+Routes use the official React Router file route conventions via `@react-router/fs-routes`.
 
-## Expanding the ESLint configuration
+Key files:
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+- `react-router.config.ts` — React Router config. `appDirectory` is `src` and `ssr` is disabled for SPA output.
+- `src/root.tsx` — root document shell/layout. Add global providers, metadata shell, and app-wide wrappers here.
+- `src/routes.ts` — exports `flatRoutes()` so route modules are discovered from `src/routes/`.
+- `src/routes/` — route modules.
 
-```js
-export default tseslint.config({
-  extends: [
-    // Remove ...tseslint.configs.recommended and replace with this
-    ...tseslint.configs.recommendedTypeChecked,
-    // Alternatively, use this for stricter rules
-    ...tseslint.configs.strictTypeChecked,
-    // Optionally, add this for stylistic rules
-    ...tseslint.configs.stylisticTypeChecked,
-  ],
-  languageOptions: {
-    // other options...
-    parserOptions: {
-      project: ['./tsconfig.node.json', './tsconfig.app.json'],
-      tsconfigRootDir: import.meta.dirname,
-    },
-  },
-})
+Current route examples:
+
+- `src/routes/_index.tsx` → `/`
+- `src/routes/dashboard.tsx` → `/dashboard`
+- `src/routes/login.tsx` → `/login`
+- `src/routes/register.tsx` → `/register`
+- `src/routes/users.tsx` → `/users`
+
+Useful naming conventions:
+
+- `_index.tsx` creates an index route.
+- `about.tsx` creates `/about`.
+- `$id.tsx` creates `/:id`.
+- `projects.$projectId.tsx` creates `/projects/:projectId`.
+
+See: <https://reactrouter.com/how-to/file-route-conventions>
+
+## Scripts
+
+```bash
+bun run dev      # Start React Router dev server
+bun run build    # Type-check and build the SPA to build/client
+bun run preview  # Preview build/client with Vite
+bun run lint     # Run ESLint
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+## Generated files
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default tseslint.config({
-  plugins: {
-    // Add the react-x and react-dom plugins
-    'react-x': reactX,
-    'react-dom': reactDom,
-  },
-  rules: {
-    // other rules...
-    // Enable its recommended typescript rules
-    ...reactX.configs['recommended-typescript'].rules,
-    ...reactDom.configs.recommended.rules,
-  },
-})
-```
+React Router generates type/build artifacts in `.react-router/` and `build/`. These are ignored by Git and ESLint.

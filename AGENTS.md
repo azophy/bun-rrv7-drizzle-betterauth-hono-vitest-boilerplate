@@ -11,6 +11,32 @@ Install these skills and use the relevant skill before implementing changes:
 - Bun: <https://www.skills.sh/site/bun.sh/bun>
 - Vitest: <https://www.skills.sh/antfu/skills/vitest>
 
+## Common commands
+
+Run commands with Bun from the repository root unless noted otherwise:
+
+```bash
+bun install
+bun run dev
+bun run dev:client
+bun run dev:server
+bun run build
+bun run build:client
+bun run build:server
+bun run lint
+bun run type-check
+bun run test
+```
+
+For client-only commands, you can also run from `client/`:
+
+```bash
+bun run dev
+bun run build
+bun run preview
+bun run lint
+```
+
 Project-specific server notes are documented in [`server/README.md`](server/README.md).
 
 When working in `server/`, consult that file for:

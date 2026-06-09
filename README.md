@@ -53,25 +53,25 @@ If you wanted to add a database to Hono you can do so with a multitude of Typesc
 
 ### Client
 
-bhvr uses Vite + React TypeScript with [React Router](https://reactrouter.com) for client-side routing. Routes are file-based: add `.tsx` files under `client/src/routes/` and they are automatically registered by `client/src/App.tsx` via `import.meta.glob`. For example, `client/src/routes/index.tsx` maps to `/`, `dashboard.tsx` maps to `/dashboard`, and `[id].tsx` maps to `/:id`.
+bhvr uses React + TypeScript on Vite with [React Router framework mode](https://reactrouter.com/start/framework/routing). Routes follow the official [file route conventions](https://reactrouter.com/how-to/file-route-conventions) through `@react-router/fs-routes`: add `.tsx` route modules under `client/src/routes/` and they are automatically discovered by `client/src/routes.ts`. For example, `client/src/routes/_index.tsx` maps to `/`, `dashboard.tsx` maps to `/dashboard`, and `$id.tsx` maps to `/:id`.
 
 ```
 client
 ├── eslint.config.js
-├── index.html
 ├── package.json
 ├── public
 │   └── vite.svg
+├── react-router.config.ts  # React Router framework config; SPA mode enabled
 ├── README.md
 ├── src
-│   ├── App.tsx          # Registers file-based routes from src/routes
 │   ├── assets
 │   ├── components
 │   ├── index.css
-│   ├── main.tsx
-│   ├── routes           # File-based React Router routes
+│   ├── root.tsx            # Root layout and document shell
+│   ├── routes.ts           # Uses @react-router/fs-routes flatRoutes()
+│   ├── routes              # File route convention route modules
+│   │   ├── _index.tsx
 │   │   ├── dashboard.tsx
-│   │   ├── index.tsx
 │   │   ├── login.tsx
 │   │   ├── register.tsx
 │   │   └── users.tsx
@@ -131,7 +131,7 @@ bun install
 bun run dev
 
 # Or run individual workspaces directly
-bun run dev:client    # Run the Vite dev server for React
+bun run dev:client    # Run the React Router dev server for the client
 bun run dev:server    # Run the Hono backend
 ```
 
@@ -142,7 +142,7 @@ bun run dev:server    # Run the Hono backend
 bun run build
 
 # Or build individual workspaces directly
-bun run build:client  # Build the React frontend
+bun run build:client  # Type-check and build the React Router SPA
 bun run build:server  # Build the Hono backend
 ```
 
@@ -187,6 +187,8 @@ import { ApiResponse } from 'shared/types';
 - [Bun Documentation](https://bun.sh/docs)
 - [Vite Documentation](https://vitejs.dev/guide/)
 - [React Documentation](https://react.dev/learn)
+- [React Router Documentation](https://reactrouter.com/start/framework/routing)
+- [React Router File Route Conventions](https://reactrouter.com/how-to/file-route-conventions)
 - [Hono Documentation](https://hono.dev/docs)
 - [Turbo Documentation](https://turbo.build/docs)
 - [TypeScript Documentation](https://www.typescriptlang.org/docs/)
