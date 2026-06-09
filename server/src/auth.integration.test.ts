@@ -44,6 +44,16 @@ describe("Better Auth integration", () => {
 		await closeDb?.();
 	});
 
+	const signUpUser = async (email: string, password = "CorrectHorseBatteryStaple123!") => {
+		const response = await app("/api/auth/sign-up/email", jsonRequest({
+			email,
+			password,
+			name: "Integration Test",
+		}));
+		expect(response.status).toBe(200);
+		return response;
+	};
+
 	it("signs up, signs in, and signs out with email/password", async () => {
 		const email = `integration-${Date.now()}@example.com`;
 		const password = "CorrectHorseBatteryStaple123!";
@@ -82,5 +92,68 @@ describe("Better Auth integration", () => {
 		});
 		expect(signedOutSession.status).toBe(200);
 		expect(await signedOutSession.json()).toBeNull();
+	});
+
+	it("rejects sign in with the wrong password", async () => {
+		const email = `wrong-password-${Date.now()}@example.com`;
+		const password = "CorrectHorseBatteryStaple123!";
+		await signUpUser(email, password);
+
+		const signIn = await app("/api/auth/sign-in/email", jsonRequest({
+			email,
+			password: "DefinitelyWrongPassword123!",
+		}));
+
+		expect(signIn.status).toBe(401);
+		expect(cookieHeader(signIn)).toBeFalsy();
+	});
+
+	it("rejects sign in with an unknown email", async () => {
+		const signIn = await app("/api/auth/sign-in/email", jsonRequest({
+			email: `unknown-${Date.now()}@example.com`,
+			password: "CorrectHorseBatteryStaple123!",
+		}));
+
+		expect(signIn.status).toBe(401);
+		expect(cookieHeader(signIn)).toBeFalsy();
+	});
+
+	it("rejects invalid email input", async () => {
+		const invalidSignUp = await app("/api/auth/sign-up/email", jsonRequest({
+			email: "not-an-email",
+			password: "CorrectHorseBatteryStaple123!",
+			name: "Invalid Email",
+		}));
+		expect(invalidSignUp.status).toBe(400);
+
+		const invalidSignIn = await app("/api/auth/sign-in/email", jsonRequest({
+			email: "not-an-email",
+			password: "CorrectHorseBatteryStaple123!",
+		}));
+		expect(invalidSignIn.status).toBe(400);
+	});
+
+	it("rejects duplicate signup for the same email", async () => {
+		const email = `duplicate-${Date.now()}@example.com`;
+		await signUpUser(email);
+
+		const duplicateSignUp = await app("/api/auth/sign-up/email", jsonRequest({
+			email,
+			password: "CorrectHorseBatteryStaple123!",
+			name: "Duplicate User",
+		}));
+
+		expect(duplicateSignUp.status).toBe(422);
+	});
+
+	it("handles unauthenticated signout without creating a session", async () => {
+		const signOut = await app("/api/auth/sign-out", jsonRequest());
+
+		expect(signOut.status).toBe(200);
+		expect(await signOut.json()).toEqual({ success: true });
+
+		const session = await app("/api/auth/get-session");
+		expect(session.status).toBe(200);
+		expect(await session.json()).toBeNull();
 	});
 });
