@@ -106,6 +106,17 @@ import { ApiResponse } from 'shared'
 
 ## Getting Started
 
+### Recommended Agent Skills
+
+For agentic coding workflows, install these skills and use the relevant skill before implementing changes:
+
+- React Router framework mode: <https://www.skills.sh/remix-run/agent-skills/react-router-framework-mode>
+- Better Auth best practices: <https://www.skills.sh/better-auth/skills/better-auth-best-practices>
+- Drizzle ORM patterns: <https://www.skills.sh/giuseppe-trisciuoglio/developer-kit/drizzle-orm-patterns>
+- Hono: <https://www.skills.sh/yusukebe/hono-skill/hono>
+- Bun: <https://www.skills.sh/site/bun.sh/bun>
+- Vitest: <https://www.skills.sh/antfu/skills/vitest>
+
 ### Installation
 
 ```bash
