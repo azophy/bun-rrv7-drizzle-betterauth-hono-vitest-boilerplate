@@ -39,6 +39,8 @@ bun run lint
 
 Project-specific server notes are documented in [`server/README.md`](server/README.md).
 
+Client auth integration notes are documented in [`client/docs/auth.md`](client/docs/auth.md). When working on client-side auth-related features (signup, signin, signout, session checks, protected routes, or auth tests), read that document first and keep it updated.
+
 When working in `server/`, consult that file for:
 
 - the current tech stack
