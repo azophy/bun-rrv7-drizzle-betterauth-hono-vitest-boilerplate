@@ -2,14 +2,15 @@
 
 ![cover](https://cdn.stevedylan.dev/ipfs/bafybeievx27ar5qfqyqyud7kemnb5n2p4rzt2matogi6qttwkpxonqhra4)
 
-A full-stack TypeScript monorepo starter with shared types, using Bun, Hono, Vite, and React.
+A full-stack TypeScript monorepo boilerplate for agentic coding-ready projects, with shared types and a modern Bun, Hono, Vite, React, and React Router file-based routing stack.
 
 ## Why bhvr?
 
-While there are plenty of existing app building stacks out there, many of them are either bloated, outdated, or have too much of a vendor lock-in. bhvr is built with the opinion that you should be able to deploy your client or server in any environment while also keeping type safety.
+While there are plenty of existing app building stacks out there, many of them are either bloated, outdated, or have too much vendor lock-in. bhvr is a boilerplate for building agentic coding-ready projects: clear workspace boundaries, shared TypeScript contracts, predictable client/server structure, and deployment flexibility without sacrificing type safety.
 
 ## Features
 
+- **Agentic Coding-Ready Boilerplate**: Predictable structure and conventions that make it easy for coding agents to inspect, modify, and extend the project
 - **Full-Stack TypeScript**: End-to-end type safety between client and server
 - **Shared Types**: Common type definitions shared between client and server
 - **Monorepo Structure**: Organized as a workspaces-based monorepo with Turbo for build orchestration
@@ -18,13 +19,14 @@ While there are plenty of existing app building stacks out there, many of them a
   - [Hono](https://hono.dev) as the backend framework
   - [Vite](https://vitejs.dev) for frontend bundling
   - [React](https://react.dev) for the frontend UI
+  - [React Router](https://reactrouter.com) for client-side file-based routing
   - [Turbo](https://turbo.build) for monorepo build orchestration and caching
 
 ## Project Structure
 
 ```
 .
-├── client/               # React frontend
+├── client/               # React frontend with React Router file-based routing
 ├── server/               # Hono backend
 ├── shared/               # Shared TypeScript definitions
 │   └── src/types/        # Type definitions used by both client and server
@@ -46,37 +48,12 @@ server
 └── tsconfig.json
 ```
 
-```typescript src/index.ts
-import { Hono } from 'hono'
-import { cors } from 'hono/cors'
-import type { ApiResponse } from 'shared'
-
-const app = new Hono()
-
-app.use(cors())
-
-app.get('/', (c) => {
-  return c.text('Hello Hono!')
-})
-
-app.get('/hello', async (c) => {
-
-  const data: ApiResponse = {
-    message: "Hello BHVR!",
-    success: true
-  }
-
-  return c.json(data, { status: 200 })
-})
-
-export default app
-```
 
 If you wanted to add a database to Hono you can do so with a multitude of Typescript libraries like [Supabase](https://supabase.com), or ORMs like [Drizzle](https://orm.drizzle.team/docs/get-started) or [Prisma](https://www.prisma.io/orm)
 
 ### Client
 
-bhvr uses Vite + React Typescript template, which means you can build your frontend just as you would with any other React app. This makes it flexible to add UI components like [shadcn/ui](https://ui.shadcn.com) or routing using [React Router](https://reactrouter.com/start/declarative/installation).
+bhvr uses Vite + React TypeScript with [React Router](https://reactrouter.com) for client-side routing. Routes are file-based: add `.tsx` files under `client/src/routes/` and they are automatically registered by `client/src/App.tsx` via `import.meta.glob`. For example, `client/src/routes/index.tsx` maps to `/`, `dashboard.tsx` maps to `/dashboard`, and `[id].tsx` maps to `/:id`.
 
 ```
 client
@@ -87,11 +64,17 @@ client
 │   └── vite.svg
 ├── README.md
 ├── src
-│   ├── App.css
-│   ├── App.tsx
+│   ├── App.tsx          # Registers file-based routes from src/routes
 │   ├── assets
+│   ├── components
 │   ├── index.css
 │   ├── main.tsx
+│   ├── routes           # File-based React Router routes
+│   │   ├── dashboard.tsx
+│   │   ├── index.tsx
+│   │   ├── login.tsx
+│   │   ├── register.tsx
+│   │   └── users.tsx
 │   └── vite-env.d.ts
 ├── tsconfig.app.json
 ├── tsconfig.json
@@ -99,59 +82,6 @@ client
 └── vite.config.ts
 ```
 
-```typescript src/App.tsx
-import { useState } from 'react'
-import beaver from './assets/beaver.svg'
-import { ApiResponse } from 'shared'
-import './App.css'
-
-const SERVER_URL = import.meta.env.VITE_SERVER_URL || "http://localhost:3000"
-
-function App() {
-  const [data, setData] = useState<ApiResponse | undefined>()
-
-  async function sendRequest() {
-    try {
-      const req = await fetch(`${SERVER_URL}/hello`)
-      const res: ApiResponse = await req.json()
-      setData(res)
-    } catch (error) {
-      console.log(error)
-    }
-  }
-
-  return (
-    <>
-      <div>
-        <a href="https://github.com/stevedylandev/bhvr" target="_blank">
-          <img src={beaver} className="logo" alt="beaver logo" />
-        </a>
-      </div>
-      <h1>bhvr</h1>
-      <h2>Bun + Hono + Vite + React</h2>
-      <p>A typesafe fullstack monorepo</p>
-      <div className="card">
-        <button onClick={sendRequest}>
-          Call API
-        </button>
-        {data && (
-          <pre className='response'>
-            <code>
-            Message: {data.message} <br />
-            Success: {data.success.toString()}
-            </code>
-          </pre>
-        )}
-      </div>
-      <p className="read-the-docs">
-        Click the beaver to learn more
-      </p>
-    </>
-  )
-}
-
-export default App
-```
 
 ### Shared
 
@@ -167,11 +97,6 @@ shared
 └── tsconfig.json
 ```
 
-Inside the `src/index.ts` we export any of our code from the folders so it's usable in other parts of the monorepo
-
-```typescript
-export * from "./types"
-```
 
 By running `bun run dev` or `bun run build` it will compile and export the packages from `shared` so it can be used in either `client` or `server`
 
@@ -180,14 +105,6 @@ import { ApiResponse } from 'shared'
 ```
 
 ## Getting Started
-
-### Quick Start
-
-You can start a new bhvr project using the [CLI](https://github.com/stevedylandev/create-bhvr)
-
-```bash
-bun create bhvr
-```
 
 ### Installation
 
