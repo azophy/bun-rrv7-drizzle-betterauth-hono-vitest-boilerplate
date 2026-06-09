@@ -4,6 +4,7 @@ import { db } from "./db";
 import * as schema from "./db/schema";
 
 const isTest = process.env.NODE_ENV === "test" || process.env.VITEST === "true";
+const clientOrigin = process.env.CLIENT_ORIGIN ?? "http://localhost:5173";
 
 export const auth = betterAuth({
 	appName: "BHVR Experiment",
@@ -17,8 +18,8 @@ export const auth = betterAuth({
 		enabled: true,
 	},
 	trustedOrigins: [
+		clientOrigin,
 		process.env.BETTER_AUTH_URL ?? "http://localhost:3000",
-		"http://localhost:5173",
 	],
 	advanced: {
 		useSecureCookies: !isTest && process.env.NODE_ENV === "production",

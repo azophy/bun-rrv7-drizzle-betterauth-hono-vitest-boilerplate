@@ -5,6 +5,7 @@ const routes = [
 	{ path: "/login", label: "Login" },
 	{ path: "/register", label: "Register" },
 	{ path: "/users", label: "Users" },
+	{ path: "/logout", label: "Logout" },
 ];
 
 function IndexRoute() {
@@ -18,8 +19,7 @@ function IndexRoute() {
 					Sample admin designs
 				</h1>
 				<p className="mt-3 text-gray-600">
-					These dummy routes render the imported static designs without making API
-					calls.
+					Sign up or sign in to access protected dashboard and user routes.
 				</p>
 			</div>
 
