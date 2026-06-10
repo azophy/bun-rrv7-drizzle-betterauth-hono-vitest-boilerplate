@@ -6,8 +6,8 @@ This client integrates with Better Auth through the Hono server package. Use thi
 
 - Server auth endpoints are mounted in `server/src/index.ts` under `/api/auth/*`.
 - Client auth calls live in `client/src/lib/auth.ts`.
-- `client/src/lib/auth.ts` uses the typed Hono client exported by `server/client` (`hcWithType`).
-- Client response types are inferred from the Hono RPC client endpoint return types. Do not manually duplicate auth response shapes in the client.
+- `client/src/lib/auth.ts` calls Better Auth endpoints with `fetch` and `credentials: "include"`.
+- Client response types are imported from `server/client`, where they are inferred from Better Auth server APIs. Do not manually duplicate auth response shapes in the client.
 - Auth cookies are managed by Better Auth and must be sent with cross-origin requests using `credentials: "include"`.
 - Protected-route helpers live in `client/src/lib/require-user.ts`.
 - `redirectIfAuthenticated()` accepts an optional redirect target and defaults to `/`, where the homepage renders the dashboard.
@@ -78,23 +78,15 @@ export async function clientLoader() {
 
 The client does **not** currently install or use `better-auth/client` or `better-auth/react`.
 
-That is intentional: the current integration uses Hono RPC-style calls to the server package plus Better Auth HTTP endpoints. Install Better Auth client only if you need Better Auth's client helpers/hooks/plugins directly in React. If you add it, document why and update tests accordingly.
+That is intentional: the current integration calls Better Auth HTTP endpoints directly and imports server-derived response types. Install Better Auth client only if you need Better Auth's client helpers/hooks/plugins directly in React. If you add it, document why and update tests accordingly.
 
-## Hono RPC notes
+## Auth endpoint typing notes
 
-The client can use `hcWithType` for auth calls because `server/src/index.ts` declares explicit auth endpoint routes before the Better Auth wildcard. Keep those explicit routes in sync with `client/src/lib/auth.ts`.
+`server/src/index.ts` mounts Better Auth once with the `/api/auth/*` wildcard and delegates behavior to `auth.handler(request)`.
 
-Better Auth still handles the actual request via `auth.handler(request)`, so Hono provides route-path integration while Better Auth owns the auth behavior and response format.
+`server/client` exports auth response types derived from `auth.api.*` / `auth.$Infer`. `client/src/lib/auth.ts` imports those types while making plain `fetch` calls to the Better Auth endpoints.
 
-`server/src/index.ts` annotates the explicit auth routes with response types derived from `auth.api.*` / `auth.$Infer`. The client then derives its exported auth response types from each Hono client endpoint's `json()` return type:
-
-```ts
-type SignInResponse = InferResponseType<
-  typeof authApi["sign-in"]["email"]["$post"]
->;
-```
-
-If an auth endpoint response shape changes, update the server route annotation first so the Hono client type remains the source of truth.
+If an auth endpoint response shape changes, update the exported server auth response type first so the server remains the source of truth.
 
 ## Tests
 
@@ -104,7 +96,7 @@ Client auth integration tests live in:
 client/src/auth.integration.test.ts
 ```
 
-They mock the HTTP/Hono fetch layer by stubbing `globalThis.fetch`.
+They mock the auth HTTP fetch layer by stubbing `globalThis.fetch`.
 
 Run client tests:
 
