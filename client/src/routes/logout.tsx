@@ -18,7 +18,7 @@ function LogoutRoute() {
 							Sign out
 						</button>
 					</Form>
-					<Link className="rounded-md px-4 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-100" to="/dashboard">
+					<Link className="rounded-md px-4 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-100" to="/">
 						Cancel
 					</Link>
 				</div>

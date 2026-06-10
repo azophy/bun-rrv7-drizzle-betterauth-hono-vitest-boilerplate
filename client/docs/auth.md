@@ -10,6 +10,7 @@ This client integrates with Better Auth through the Hono server package. Use thi
 - Client response types are inferred from the Hono RPC client endpoint return types. Do not manually duplicate auth response shapes in the client.
 - Auth cookies are managed by Better Auth and must be sent with cross-origin requests using `credentials: "include"`.
 - Protected-route helpers live in `client/src/lib/require-user.ts`.
+- `redirectIfAuthenticated()` accepts an optional redirect target and defaults to `/`, where the homepage renders the dashboard.
 
 Default local origins:
 
@@ -53,7 +54,7 @@ Auth routes use React Router framework mode client data APIs because this app is
 - Use React Router `<Form method="post">` for auth forms.
 - Do not sign out in a loader; always sign out from an action.
 
-Protected routes should call `requireUser()` in their `clientLoader`:
+Protected routes, including the homepage dashboard, should call `requireUser()` in their `clientLoader`:
 
 ```ts
 import { requireUser } from "@/lib/require-user";

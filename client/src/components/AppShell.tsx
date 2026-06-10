@@ -9,7 +9,7 @@ type AppShellProps = {
 };
 
 const navigation = [
-	{ href: "/dashboard", label: "Dashboard" },
+	{ href: "/", label: "Dashboard" },
 	{ href: "/users", label: "Users" },
 ];
 
@@ -17,7 +17,7 @@ export function AppShell({ children, title, user }: AppShellProps) {
 	return (
 		<div className="flex h-dvh overflow-hidden bg-gray-50">
 			<aside className="hidden w-64 flex-col overflow-y-auto border-r border-gray-200 bg-white lg:flex">
-				<Link className="flex h-16 shrink-0 items-center border-b border-gray-200 px-6" to="/dashboard">
+				<Link className="flex h-16 shrink-0 items-center border-b border-gray-200 px-6" to="/">
 					<ShieldIcon className="h-8 w-8 text-indigo-600" />
 					<span className="ml-3 text-xl font-bold text-gray-900">Acme</span>
 				</Link>

@@ -11,11 +11,11 @@ export async function requireUser() {
 	return session;
 }
 
-export async function redirectIfAuthenticated() {
+export async function redirectIfAuthenticated(redirectTo = "/") {
 	const session = await getSession();
 
 	if (session?.user) {
-		throw redirect("/dashboard");
+		throw redirect(redirectTo);
 	}
 
 	return null;

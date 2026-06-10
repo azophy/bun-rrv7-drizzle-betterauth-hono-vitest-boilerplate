@@ -1,44 +1,37 @@
-import { Link } from "react-router";
+import { AppShell } from "@/components/AppShell";
+import { requireUser } from "@/lib/require-user";
+import { useLoaderData } from "react-router";
 
-const routes = [
-	{ path: "/dashboard", label: "Dashboard" },
-	{ path: "/login", label: "Login" },
-	{ path: "/register", label: "Register" },
-	{ path: "/users", label: "Users" },
-	{ path: "/logout", label: "Logout" },
-];
+type LoaderData = Awaited<ReturnType<typeof clientLoader>>;
 
-function IndexRoute() {
+export async function clientLoader() {
+	return await requireUser();
+}
+
+function DashboardRoute() {
+	const { user } = useLoaderData<LoaderData>();
+
 	return (
-		<main className="mx-auto flex min-h-dvh max-w-3xl flex-col justify-center gap-8 px-6 py-12">
+		<AppShell title="Dashboard Overview" user={user}>
 			<div>
-				<p className="text-sm font-semibold uppercase tracking-wide text-indigo-600">
-					File-based routes
-				</p>
-				<h1 className="mt-3 text-4xl font-black tracking-tight text-gray-950">
-					Sample admin designs
-				</h1>
-				<p className="mt-3 text-gray-600">
-					Sign up or sign in to access protected dashboard and user routes.
-				</p>
+				<h2 className="text-2xl font-bold text-gray-900">Dashboard Overview</h2>
+				<p className="mt-2 text-gray-600">Welcome back, {user.name}. Here&apos;s what&apos;s happening today.</p>
 			</div>
 
-			<nav className="grid gap-3 sm:grid-cols-2">
-				{routes.map((route) => (
-					<Link
-						key={route.path}
-						to={route.path}
-						className="rounded-xl border border-gray-200 bg-white p-5 font-semibold text-gray-900 shadow-sm transition hover:-translate-y-0.5 hover:border-indigo-200 hover:shadow-md"
-					>
-						{route.label}
-						<span className="mt-1 block text-sm font-normal text-gray-500">
-							{route.path}
-						</span>
-					</Link>
+			<div className="mt-8 grid gap-6 md:grid-cols-3">
+				{[
+					["Total users", "2,450"],
+					["Active teams", "18"],
+					["Open tasks", "42"],
+				].map(([label, value]) => (
+					<div className="rounded-xl bg-white p-6 shadow-sm ring-1 ring-gray-900/5" key={label}>
+						<p className="text-sm font-medium text-gray-500">{label}</p>
+						<p className="mt-3 text-3xl font-bold text-gray-900">{value}</p>
+					</div>
 				))}
-			</nav>
-		</main>
+			</div>
+		</AppShell>
 	);
 }
 
-export default IndexRoute;
+export default DashboardRoute;

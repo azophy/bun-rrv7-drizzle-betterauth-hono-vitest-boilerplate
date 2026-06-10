@@ -12,7 +12,7 @@ type ActionData = {
 };
 
 export async function clientLoader() {
-	return await redirectIfAuthenticated();
+	return await redirectIfAuthenticated("/");
 }
 
 export async function clientAction({ request }: ClientActionArgs) {
@@ -26,7 +26,7 @@ export async function clientAction({ request }: ClientActionArgs) {
 
 	try {
 		await signIn({ email, password });
-		return redirect("/dashboard");
+		return redirect("/");
 	} catch (error) {
 		return {
 			error: error instanceof Error ? error.message : "Unable to sign in.",

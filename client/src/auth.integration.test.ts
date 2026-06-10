@@ -1,7 +1,10 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { AuthSession } from "./lib/auth";
-import { clientLoader as dashboardLoader } from "./routes/dashboard";
-import { clientAction as loginAction } from "./routes/login";
+import { clientLoader as homeLoader } from "./routes/_index";
+import {
+	clientAction as loginAction,
+	clientLoader as loginLoader,
+} from "./routes/login";
 import { clientAction as logoutAction } from "./routes/logout";
 import { clientAction as registerAction } from "./routes/register";
 import { clientLoader as usersLoader } from "./routes/users";
@@ -117,7 +120,18 @@ describe("client auth integration", () => {
 			email: "jane@example.com",
 			password: "CorrectHorseBatteryStaple123!",
 		});
-		expectRedirect(result as Response, "/dashboard");
+		expectRedirect(result as Response, "/");
+	});
+
+	it("redirects authenticated users away from login to the homepage", async () => {
+		authHandlers.getSession.mockResolvedValue(jsonResponse(testSession));
+
+		try {
+			await loginLoader();
+			throw new Error("Expected loader to redirect");
+		} catch (error) {
+			expectRedirect(error as Response, "/");
+		}
 	});
 
 	it("surfaces sign in errors from the auth endpoint", async () => {
@@ -153,13 +167,13 @@ describe("client auth integration", () => {
 			name: "Jane Doe",
 			password: "CorrectHorseBatteryStaple123!",
 		});
-		expectRedirect(result as Response, "/dashboard");
+		expectRedirect(result as Response, "/");
 	});
 
-	it("protects dashboard and users when no session exists", async () => {
+	it("protects homepage and users when no session exists", async () => {
 		authHandlers.getSession.mockImplementation(() => Promise.resolve(jsonResponse(null)));
 
-		for (const loader of [dashboardLoader, usersLoader]) {
+		for (const loader of [homeLoader, usersLoader]) {
 			try {
 				await loader();
 				throw new Error("Expected loader to redirect");
@@ -174,7 +188,7 @@ describe("client auth integration", () => {
 			Promise.resolve(jsonResponse(testSession)),
 		);
 
-		await expect(dashboardLoader()).resolves.toEqual(testSession);
+		await expect(homeLoader()).resolves.toEqual(testSession);
 		await expect(usersLoader()).resolves.toEqual(testSession);
 	});
 

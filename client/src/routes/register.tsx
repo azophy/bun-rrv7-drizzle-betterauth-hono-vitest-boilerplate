@@ -27,7 +27,7 @@ export async function clientAction({ request }: ClientActionArgs) {
 
 	try {
 		await signUp({ name, email, password });
-		return redirect("/dashboard");
+		return redirect("/");
 	} catch (error) {
 		return {
 			error: error instanceof Error ? error.message : "Unable to create account.",
